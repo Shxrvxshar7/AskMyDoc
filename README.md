@@ -2,9 +2,8 @@
   <img src="assets/Logo.jpeg" width="200" alt="AskMyDoc Logo"/>
 </p>
 
-<h1 align="center">AskMyDoc</h1>
+<h1 align="center">AskMyDoc🧠</h1>
 <p align="center">Chat with your documents using RAG · Gemini · LangChain</p>
-# DocSense 🧠
 > Ask questions. Get answers. From any document.
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)
@@ -16,9 +15,9 @@
 
 ---
 
-## What is DocSense?
+## What is AskMyDoc?
 
-DocSense is an AI-powered document intelligence app built on **Retrieval-Augmented Generation (RAG)**. Upload any PDF, ask questions in plain English, and get accurate answers — grounded in your document, not hallucinated.
+ AskMyDoc is an AI-powered document intelligence app built on **Retrieval-Augmented Generation (RAG)**. Upload any PDF, ask questions in plain English, and get accurate answers — grounded in your document, not hallucinated.
 
 Built as a learning project to understand how production RAG systems work — the same architecture used in enterprise AI applications.
 
@@ -68,7 +67,7 @@ User Question → Query Embedding → Retrieval → Gemini LLM → Answer
 ## Project Structure
 
 ```
-DocSense/
+AskMyDoc/
 │
 ├── app/
 │   ├── ingest.py          # PDF loading, chunking, embedding
@@ -93,8 +92,8 @@ DocSense/
 
 ```bash
 # Clone the repo
-git clone https://github.com/Shxrvxshar7/DocSense.git
-cd DocSense
+git clone https://github.com/Shxrvxshar7/AskMyDoc.git
+cd AskMyDoc
 
 # Install dependencies
 pip install -r requirements.txt
