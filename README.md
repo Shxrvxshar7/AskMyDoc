@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="assets/Logo.jpeg" width="200" alt="AskMyDoc Logo"/>
+</p>
+
+<h1 align="center">AskMyDoc</h1>
+<p align="center">Chat with your documents using RAG · Gemini · LangChain</p>
 # DocSense 🧠
 > Ask questions. Get answers. From any document.
 
