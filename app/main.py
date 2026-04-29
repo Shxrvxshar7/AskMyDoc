@@ -3,6 +3,9 @@ from app.rag_pipeline import load_and_store, get_qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import UPLOAD_DIR
 import os, shutil
+from pydantic import BaseModel
+
+
 
 app = FastAPI(title="AskMyDoc API")
 
@@ -27,9 +30,12 @@ async def upload(file: UploadFile = File(...)):
     chunk_count = load_and_store(path)
     return {"message": f"{file.filename} indexed sucessfully", "chunks": chunk_count}
 
+class AskRequest(BaseModel):
+    question: str
+    
 @app.post("/ask")
-async def ask(payload: dict):
-    question = payload.get("question")
+async def ask(request: AskRequest):
+    question = request.question
     chain = get_qa_chain()
     result = chain.invoke({"query": question})
     return {
