@@ -3,7 +3,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.config import CHUNK_SIZE, CHUNK_OVERLAP, CHROMA_DB_PATH, GOOGLE_API_KEY
 from langchain_chroma import Chroma
 from app.embeddings import get_embedding_function
-from langchain_google_genai import ChatGoogleGenerativeAI  
+#from langchain_google_genai import ChatGoogleGenerativeAI  
+from langchain_groq import ChatGroq
+import os
 from langchain_classic.chains import RetrievalQA
 
 
@@ -44,9 +46,17 @@ def get_qa_chain():
 
     # Step 4 - initialize Gemini LLM
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
+    """llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
         google_api_key=GOOGLE_API_KEY,
-        temperature=0.3)
+        temperature=0.3)"""
+    
+    
+
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+        api_key=os.getenv("GROQ_API_KEY"),
+        temperature=0.3
+    )
 
     # Step 5 - connect into a chain
     chain = RetrievalQA.from_chain_type(llm=llm,

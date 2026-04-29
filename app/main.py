@@ -14,12 +14,12 @@ app.add_middleware(
 )
 
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok"}
 
 
 @app.post("/upload")
-def upload(file: UploadFile = File(...)):
+async def upload(file: UploadFile = File(...)):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     path = os.path.join(UPLOAD_DIR, file.filename)
     with open(path, "wb")as f:
@@ -28,7 +28,7 @@ def upload(file: UploadFile = File(...)):
     return {"message": f"{file.filename} indexed sucessfully", "chunks": chunk_count}
 
 @app.post("/ask")
-def ask():
+async def ask(payload: dict):
     question = payload.get("question")
     chain = get_qa_chain()
     result = chain.invoke({"query": question})
