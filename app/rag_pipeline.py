@@ -1,20 +1,26 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from app.config import CHUNK_SIZE, CHUNK_OVERLAP, CHROMA_DB_PATH, GOOGLE_API_KEY
+from app.config import CHUNK_SIZE, CHUNK_OVERLAP, CHROMA_DB_PATH #, GOOGLE_API_KEY
 from langchain_chroma import Chroma
 from app.embeddings import get_embedding_function
 #from langchain_google_genai import ChatGoogleGenerativeAI  
 from langchain_groq import ChatGroq
-import os
+import shutil, os
 from langchain_classic.chains import RetrievalQA
+import chromadb
+
 
 
 def load_and_store(pdf_path: str):
 
     # Clear existing ChromaDB before re-indexing
     if os.path.exists(CHROMA_DB_PATH):
-        shutil.rmtree(CHROMA_DB_PATH)
-        
+        client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+        try:
+            client.delete_collection("askmydoc")
+        except:
+            pass
+
     # Load PDF
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
@@ -30,7 +36,8 @@ def load_and_store(pdf_path: str):
     Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
-        persist_directory=CHROMA_DB_PATH
+        persist_directory=CHROMA_DB_PATH,
+        collection_name="askmydoc"
     )
 
     return len(chunks)
@@ -43,7 +50,11 @@ def get_qa_chain():
     
     # Step 2 - load existing ChromaDB
 
-    vectorstore = Chroma(persist_directory=CHROMA_DB_PATH, embedding_function=embeddings)
+    vectorstore = Chroma(persist_directory=CHROMA_DB_PATH, 
+                         embedding_function=embeddings,
+                         collection_name="askmydoc"
+                         )
+    
     # Step 3 - create retriever with k=3
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
