@@ -10,6 +10,11 @@ from langchain_classic.chains import RetrievalQA
 
 
 def load_and_store(pdf_path: str):
+
+    # Clear existing ChromaDB before re-indexing
+    if os.path.exists(CHROMA_DB_PATH):
+        shutil.rmtree(CHROMA_DB_PATH)
+        
     # Load PDF
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
