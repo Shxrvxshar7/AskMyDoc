@@ -129,7 +129,7 @@ if logo_path.exists():
     st.image(str(logo_path), width=160)
 st.markdown("""
     <div class="logo-title">ASKMYDOC</div>
-    <div class="logo-subtitle">RAG · GEMINI · LANGCHAIN</div>
+    <div class="logo-subtitle">RAG · Groq · LANGCHAIN</div>
 </div>
 """, unsafe_allow_html=True)
 
