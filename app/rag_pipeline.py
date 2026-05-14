@@ -79,7 +79,7 @@ def get_qa_chain():
                                         retriever=retriever,
                                         return_source_documents=True)
 
-
+#less go
     
 
     return chain
