@@ -196,9 +196,12 @@ if st.session_state.get("uploaded_file_name"):
                     """, unsafe_allow_html=True)
 
         # --- Input ---
-        question = st.text_input("", placeholder="What is this document about?", label_visibility="collapsed")
 
-        if st.button("Ask") and question:
+        with st.form("ask_form", clear_on_submit=True):
+            question = st.text_input("", placeholder="What is this document about?", label_visibility="collapsed")
+            submitted = st.form_submit_button("Ask")
+
+        if submitted and question:
             with st.spinner("🤔 Thinking..."):
                 ask_response = requests.post(
                     "http://localhost:8000/ask",
