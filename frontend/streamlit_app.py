@@ -9,6 +9,9 @@ st.set_page_config(
     layout="centered"
 )
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 # --- Custom CSS ---
 st.markdown("""
 <style>
@@ -158,9 +161,41 @@ if uploaded_file:
         else:
             st.error("Upload failed. Is the FastAPI server running?")
 
-    if st.session_state.get("uploaded_file_name"):
+if st.session_state.get("uploaded_file_name"):
         st.divider()
         st.markdown("### 💬 Ask a question")
+
+        # --- Display Chat History ---
+        for chat in st.session_state.chat_history:
+            # User message — right
+            st.markdown(f"""
+                <div style="text-align:right; margin:10px 0">
+                    <span style="background:#00c9b1; color:#0a0a0a; padding:8px 14px; border-radius:12px 12px 0 12px; display:inline-block; max-width:80%">
+                        {chat["question"]}
+                    </span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            # Bot message — left
+            st.markdown(f"""
+                <div style="text-align:left; margin:10px 0">
+                    <span style="background:#0f2a45; color:#e0f7f4; padding:8px 14px; border-radius:12px 12px 12px 0; display:inline-block; max-width:80%">
+                        {chat["answer"]}
+                    </span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            with st.expander(f"📄 Sources for: {chat['question'][:40]}..."):
+                for i, source in enumerate(chat["sources"]):
+                    page = source.get("page", "?")
+                    src = source.get("source", "unknown")
+                    st.markdown(f"""
+                        <span class="source-tag">Chunk {i+1}</span>
+                        <span class="source-tag">Page {page}</span>
+                        <span class="source-tag">{Path(src).name}</span>
+                    """, unsafe_allow_html=True)
+
+        # --- Input ---
         question = st.text_input("", placeholder="What is this document about?", label_visibility="collapsed")
 
         if st.button("Ask") and question:
@@ -171,17 +206,14 @@ if uploaded_file:
                 )
             if ask_response.status_code == 200:
                 result = ask_response.json()
-                st.markdown("#### 🧠 Answer")
-                st.markdown(f'<div class="answer-box">{result["answer"]}</div>', unsafe_allow_html=True)
 
-                with st.expander("📄 Source chunks used"):
-                    for i, source in enumerate(result["sources"]):
-                        page = source.get("page", "?")
-                        src = source.get("source", "unknown")
-                        st.markdown(f"""
-                            <span class="source-tag">Chunk {i+1}</span>
-                            <span class="source-tag">Page {page}</span>
-                            <span class="source-tag">{Path(src).name}</span>
-                        """, unsafe_allow_html=True)
+                # Save to chat history
+                st.session_state.chat_history.append({
+                    "question": question,
+                    "answer": result["answer"],
+                    "sources": result["sources"]
+                })
+
+                st.rerun()
             else:
                 st.error("Something went wrong with the question.")
