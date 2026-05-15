@@ -8,7 +8,12 @@ from langchain_groq import ChatGroq
 import shutil, os
 from langchain_classic.chains import RetrievalQA
 import chromadb
+from langchain_community.retrievers import BM25Retriever
+from langchain_classic.retrievers.ensemble import EnsembleRetriever
 
+
+# Global storage for BM25
+stored_chunks = []
 
 
 def load_and_store(pdf_path: str):
@@ -31,6 +36,9 @@ def load_and_store(pdf_path: str):
         chunk_overlap=CHUNK_OVERLAP,
     )
     chunks = splitter.split_documents(documents)
+
+    global stored_chunks
+    stored_chunks = chunks
 
     embeddings = get_embedding_function()
     Chroma.from_documents(
@@ -55,12 +63,27 @@ def get_qa_chain():
                          collection_name="askmydoc"
                          )
     
-    # Step 3 - create retriever with k=3
+    # Step 3 - Dense retriever
+    dense_retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    # Step 4 - BM25 retriever
+    if stored_chunks:
+        bm25_retriever = BM25Retriever.from_documents(stored_chunks)
+        bm25_retriever.k = 5
+        retriever = EnsembleRetriever(
+            retrievers=[bm25_retriever, dense_retriever],
+            weights=[0.5, 0.5]
+        )
+    else:
+        retriever = dense_retriever  # fallback to dense only
 
+    # Step 5 - Combine with RRF
+    retriever = EnsembleRetriever(
+        retrievers=[bm25_retriever, dense_retriever],
+        weights=[0.5, 0.5]
+    )
 
-    # Step 4 - initialize Gemini LLM
+    # Step 6 - initialize Gemini LLM
 
     """llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
         google_api_key=GOOGLE_API_KEY,
@@ -74,12 +97,11 @@ def get_qa_chain():
         temperature=0.3
     )
 
-    # Step 5 - connect into a chain
+    # Step 7 - connect into a chain
     chain = RetrievalQA.from_chain_type(llm=llm,
                                         retriever=retriever,
                                         return_source_documents=True)
 
-#less go
     
 
     return chain
