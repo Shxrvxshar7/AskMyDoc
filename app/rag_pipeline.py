@@ -11,12 +11,22 @@ import chromadb
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers.ensemble import EnsembleRetriever
 
+from langchain_classic.memory import ConversationBufferMemory
+from langchain_classic.chains import ConversationalRetrievalChain
 
 # Global storage for BM25
 stored_chunks = []
-
+_qa_chain = None
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True,
+    output_key="answer"
+)
 
 def load_and_store(pdf_path: str):
+
+    global stored_chunks, _qa_chain
+    _qa_chain = None  # reset chain on new upload
 
     # Clear existing ChromaDB before re-indexing
     if os.path.exists(CHROMA_DB_PATH):
@@ -52,6 +62,10 @@ def load_and_store(pdf_path: str):
 
 
 def get_qa_chain():
+
+    global _qa_chain
+    if _qa_chain is not None:
+        return _qa_chain
     # Step 1 - load embeddings
 
     embeddings = get_embedding_function()
@@ -64,7 +78,7 @@ def get_qa_chain():
                          )
     
     # Step 3 - Dense retriever
-    dense_retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    dense_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
     # Step 4 - BM25 retriever
     if stored_chunks:
@@ -78,10 +92,10 @@ def get_qa_chain():
         retriever = dense_retriever  # fallback to dense only
 
     # Step 5 - Combine with RRF
-    retriever = EnsembleRetriever(
+    '''retriever = EnsembleRetriever(
         retrievers=[bm25_retriever, dense_retriever],
         weights=[0.5, 0.5]
-    )
+    )'''
 
     # Step 6 - initialize Gemini LLM
 
@@ -98,10 +112,11 @@ def get_qa_chain():
     )
 
     # Step 7 - connect into a chain
-    chain = RetrievalQA.from_chain_type(llm=llm,
-                                        retriever=retriever,
-                                        return_source_documents=True)
-
-    
-
-    return chain
+    _qa_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=retriever,
+        memory=memory,
+        return_source_documents=True,
+        output_key = "answer"
+    )
+    return _qa_chain

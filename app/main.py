@@ -37,12 +37,11 @@ class AskRequest(BaseModel):
 async def ask(request: AskRequest):
     question = request.question
     chain = get_qa_chain()
-    result = chain.invoke({"query": question})
+    result = chain.invoke({"question": question})
     return {
-        "answer": result["result"],
-        "sources": [doc.metadata for doc in result["source_documents"]]
-    }
-
+    "answer": result["answer"],
+    "sources": [doc.metadata for doc in result["source_documents"]]
+}
 
 
     
