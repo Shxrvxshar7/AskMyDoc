@@ -167,7 +167,7 @@ Interactive API docs available at `http://localhost:8000/docs`
 - [x] Chat history UI with bubble style
 - [x] FastEmbed for faster embeddings
 - [x] Duplicate upload fix with named ChromaDB collection
-- [ ] Conversational memory — follow-up questions with context
+- [X] Conversational memory — follow-up questions with context
 - [ ] Multi-document support
 - [ ] Cloud deployment (Azure / AWS)
 - [ ] Evaluation with RAGAS
